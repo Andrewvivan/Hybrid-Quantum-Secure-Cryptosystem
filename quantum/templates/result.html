@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Result</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/results.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{% static 'js/results.js' %}"></script>
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Launched Successfully</h1>
+            <p>{{ message }}</p>
+        </div>
+        <div class="content">
+            <div class="rectangle-grid">
+                <a href="{% url 'quantum_key_distribution' %}" class="rect-item" data-width="280px" data-height="140px">
+                    <div class="rect-content">
+                        <div class="rect-icon"></div>
+                        <div class="rect-title">Return to Quantum Key Distribution</div>
+                        <div class="rect-desc">To generate new Quantum keys</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'post_quantum_cryptography' %}" class="rect-item" data-width="280px" data-height="140px">
+                    <div class="rect-content">
+                        <div class="rect-icon"></div>
+                        <div class="rect-title">Return to Post Quantum Cryptography</div>
+                        <div class="rect-desc">To exchange Quantum resistant Kyber keys</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'quantum_secure_communication' %}" class="rect-item" data-width="280px" data-height="140px">
+                    <div class="rect-content">
+                        <div class="rect-title">Return to Quantum Secure Communication</div>
+                        <div class="rect-desc">To ensure a secure chat</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="home-container">
+            <a href="/" class="home-button">Return Home</a>
+        </div>
+        <div class="footer">
+            <p>© Hybrid Quantum Secure Cryptosystem. By Sristi J, YB Tulasi, Ashoka A, Andrew Vivan X</p>
+        </div>
+    </div>
+</body>
+</html>

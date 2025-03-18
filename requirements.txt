@@ -1,0 +1,9 @@
+datetime
+django
+django-cryptography
+django-sockets
+matplotlib
+pylatexenc
+pycryptodome
+qiskit
+qiskit-aer

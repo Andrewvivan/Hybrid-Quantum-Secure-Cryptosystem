@@ -1,0 +1,1 @@
+gcc --% -Wall -Wextra -Wpedantic -O3 -fomit-frame-pointer -DKYBER_K=2 kem.c indcpa.c polyvec.c poly.c ntt.c cbd.c reduce.c verify.c fips202.c symmetric-shake.c randombytes.c kyber512_dll.c -shared -o libkyber512.dll -Wl,--allow-multiple-definition

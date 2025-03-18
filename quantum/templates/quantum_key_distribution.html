@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Cryptography</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Quantum Key Distribution Simulation</h1>
+            <p>BB84 simulation using Qiskit and Sockets for secure Quantum Key distribution</p>
+        </div>
+        
+        <div class="content">
+            <form method="POST">
+                {% csrf_token %}
+                <label for="role">Choose your role:</label>
+                <select name="role" id="role">
+                    <option value="qkd_sender">BB84 Sender</option>
+                    <option value="qkd_receiver">BB84 Receiver</option>
+                    <option value="qkd_eve">BB84 Eve</option>
+                </select>
+                <button type="submit">Start Key Distrubution</button>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <a href="/">Back to Home</a>
+            <p>© Quantum Cryptography</p>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

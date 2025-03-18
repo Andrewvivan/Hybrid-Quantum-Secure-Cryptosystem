@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Quantum Secure Cryptosystem</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<style>
+    .icon-qkd {
+        background-image: url("{% static 'icons/qkd-icon.png' %}");
+    }
+
+    .icon-kyber {
+        background-image: url("{% static 'icons/kyber-icon.png' %}");
+    }
+
+    .icon-qsc {
+        background-image: url("{% static 'icons/qsc-icon.png' %}");
+    }
+
+    .icon-dp {
+        background-image: url("{% static 'icons/dp-icon.png' %}");
+    }
+
+    .icon-kms {
+        background-image: url("{% static 'icons/kms-icon.png' %}");
+    }
+</style>
+<body>
+    <canvas id="bg"></canvas>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Hybrid Quantum Secure Cryptosystem</h1>
+            <p>To secure your communication and digital assets against current attacks and future quantum threat.</p>
+        </div>
+        
+        <div class="content">
+            <div class="rectangle-grid">
+                <a href="{% url 'quantum_key_distribution' %}" class="rect-item">
+                    <div class="rect-content">
+                        <div class="rect-icon icon-qkd"></div>
+                        <div class="rect-title">Quantum Key Distribution</div>
+                        <div class="rect-desc">BB84 key distribution Protocol simulation over socket.</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'post_quantum_cryptography' %}" class="rect-item">
+                    <div class="rect-content">
+                        <div class="rect-icon icon-kyber"></div>
+                        <div class="rect-title">Kyber Key Exchange</div>
+                        <div class="rect-desc">Kyber a cryptographic algorithm resistant to attacks from both classical and quantum computers.</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'quantum_secure_communication' %}" class="rect-item">
+                    <div class="rect-content">
+                        <div class="rect-icon icon-qsc"></div>
+                        <div class="rect-title">Quantum Secure Communication</div>
+                        <div class="rect-desc">End-to-End encrypted communication channel secured by quantum resistant protocols.</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'data_protection' %}" class="rect-item">
+                    <div class="rect-content">
+                        <div class="rect-icon icon-dp"></div>
+                        <div class="rect-title">Data Protection</div>
+                        <div class="rect-desc">
+                            A secure encryption system to encrypt and decrypt files while ensuring data integrity and confidentiality.</div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'key_management_system' %}" class="rect-item">
+                    <div class="rect-content">
+                        <div class="rect-icon icon-kms"></div>
+                        <div class="rect-title">Key Management System</div>
+                        <div class="rect-desc">key generation, protection and lifecycle management designed for hybrid quantum secure cryptographic systems.</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© Hybrid Quantum Secure Cryptosystem. By Sristi J, YB Tulasi, Ashoka A, Andrew Vivan X</p>
+            <p>Learn more: <a href="/">Hybrid Quantum Secure Cryptography for Data Protection and Secure Communication</a></p>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

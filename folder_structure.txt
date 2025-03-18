@@ -1,0 +1,104 @@
+Hybrid_Quantum_Secure_Cryptosystem/
+|
+├── quantum/
+│   ├── __init__.py
+│   ├── apps.py
+│   ├── views.py
+│   ├── urls.py
+|   |
+│   ├── quantum_key_distribution/
+│   │       ├── __init__.py
+│   │       ├── qkd_sender.py
+│   │       ├── qkd_receiver.py
+│   │       ├── qkd_eve.py
+|   |
+│   ├── kyber_key_exchange/
+|   |       ├── __init__.py
+|   |       ├── Kyber_wrapper1024.py
+|   |       ├── libkyber1024.dll
+|   |       ├── kyber_sender.py
+|   |       ├── kyber_receiver.py
+|   |
+|   |──── kyber_source_files/
+│   │       ├── kyber512/
+|   |       |       ├── kyber_dll512.c
+|   |       |       ├── Kyber_wrapper512.py
+|   |       |       ├── kyber512_gcc_command.txt
+|   |       |       ├── libkyber512.dll
+|   |       |       ├── test512.py
+|   |       |
+│   │       ├── kyber768/
+|   |       |       ├── kyber_dll768.c
+|   |       |       ├── Kyber_wrapper768.py
+|   |       |       ├── kyber768_gcc_command.txt
+|   |       |       ├── libkyber768.dll
+|   |       |       ├── test768.py
+|   |       |
+│   │       ├── kyber1024/
+|   |       |       ├── kyber_dll1024.c
+|   |       |       ├── Kyber_wrapper1024.py
+|   |       |       ├── kyber1024_gcc_command.txt
+|   |       |       ├── libkyber1024.dll
+|   |       |       ├── test1024.py
+|   |       | 
+|   |       ├── (.c source codes of kyber)
+|   |       ├── (.h header files of kyber)
+|   |
+|   |──── secure_communication/
+|   |       ├── __init__.py
+│   │       ├── reference_implementations/
+│   │       ├── basic_secure_sender.py
+│   │       ├── basic_secure_receiver.py
+│   │       ├── standard_secure_sender.py
+│   │       ├── standard_secure_receiver.py
+│   │       ├── advanced_secure_sender.py
+│   │       ├── advanced_secure_receiver.py
+|   |       ├── kyber_wrapper512.py
+|   |       ├── kyber_wrapper768.py
+|   |       ├── libkyber512.dll
+|   |       ├── libkyber768.dll
+|   |
+|   |──── key_management_system/
+|   |       ├── __init__.py
+|   |       ├── kms.py
+|   |
+|   |──── data_protection/
+|   |       ├── __init__.py
+|   |       ├── dataprotection.py
+|   |
+|   ├── database/
+|   |       ├── database.db
+|   |
+|   ├── scripts/
+|   |       ├── css/
+|   |       |    ├── main.css
+|   |       |    ├── results.css
+|   |       |
+|   |       ├── icons/
+|   |       |    ├── icons (png)
+|   |       | 
+|   |       ├── js/
+|   |           ├── main.js
+|   |           ├── results.js
+|   |   
+│   └── templates/
+│           ├── home.html
+│           ├── quantum_key_distribution.html
+│           ├── quantum_secure_communication.html
+|           ├── post_quantum_cryptography.html
+│           ├── result.html
+|
+|──── quantum_app/
+|       ├── __init__.py
+|       ├── asgi.py
+|       ├── settings.py
+|       ├── wsgi.py
+|       ├── urls.py
+|
+|──── manage.py
+|
+|──── db.sqlite3
+|
+|──── folder_structure.txt
+|
+|──── requirements.txt
