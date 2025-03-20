@@ -720,8 +720,7 @@ class QuantumKeyManagementSystem:
                     history_table.delete(selected[0])
                     messagebox.showinfo("Success", "Key deleted successfully")
             self.password_prompt("Delete Key", perform_deletion)
-
-        # Hybrid Key Generation Frame Setup
+            
         hybrid_frame = ttk.LabelFrame(hybrid_key_frame, text="Hybrid Key Generation")
         hybrid_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
