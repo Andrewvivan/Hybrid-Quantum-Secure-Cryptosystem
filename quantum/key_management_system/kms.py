@@ -13,6 +13,9 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Hash import SHA3_512, HMAC, SHA256
 from Crypto.Protocol.KDF import PBKDF2
 import re
+import cffi
+from argon2.low_level import hash_secret_raw, Type # type: ignore
+# from cffi import hash_secret_raw, Type
 
 class QuantumKeyManagementSystem:
     def __init__(self):
@@ -25,6 +28,7 @@ class QuantumKeyManagementSystem:
 
         self.quantum_key = None
         self.kyber_key = None
+        self.hybrid_key = None
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
         db_dir = os.path.join(base_dir, '../database')
@@ -460,6 +464,7 @@ class QuantumKeyManagementSystem:
             self.session_start_time = None
             self.quantum_key = None
             self.kyber_key = None
+            self.hybrid_key = None
             if self.kms_window and self.kms_window.winfo_exists():
                 self.kms_window.destroy()
                 self.kms_window = None
@@ -679,6 +684,7 @@ class QuantumKeyManagementSystem:
                             self.quantum_key = decrypted
                         elif key_type == "kyber":
                             self.kyber_key = decrypted
+                        update_hybrid_key_displays()
                         notebook.select(hybrid_key_frame)
                         decrypt_window.destroy()
                     tk.Button(button_frame, text="Copy Key", command=copy_key, width=15).pack(side=tk.LEFT, padx=10)
@@ -715,6 +721,7 @@ class QuantumKeyManagementSystem:
                     messagebox.showinfo("Success", "Key deleted successfully")
             self.password_prompt("Delete Key", perform_deletion)
 
+        # Hybrid Key Generation Frame Setup
         hybrid_frame = ttk.LabelFrame(hybrid_key_frame, text="Hybrid Key Generation")
         hybrid_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
@@ -748,6 +755,10 @@ class QuantumKeyManagementSystem:
 
         result_frame = ttk.LabelFrame(hybrid_frame, text="Hybrid Key Result")
         result_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        hybrid_status_var = tk.StringVar(value="Not loaded")
+        tk.Label(result_frame, text="Hybrid Key Status:").pack(anchor=tk.W, padx=10, pady=(5,0))
+        tk.Label(result_frame, textvariable=hybrid_status_var).pack(anchor=tk.W, padx=10, pady=(0,5))
         result_display_frame = ttk.Frame(result_frame)
         result_display_frame.pack(fill=tk.X, padx=10, pady=5)
         result_key_text = scrolledtext.ScrolledText(result_display_frame, height=4, state=tk.DISABLED)
@@ -847,6 +858,18 @@ class QuantumKeyManagementSystem:
                 kyber_key_text.delete("1.0", tk.END)
                 kyber_key_text.config(state=tk.DISABLED)
                 kyber_status_var.set("Not loaded")
+            if hasattr(self, 'hybrid_key') and self.hybrid_key:
+                masked = '*' * len(self.hybrid_key)
+                result_key_text.config(state=tk.NORMAL)
+                result_key_text.delete("1.0", tk.END)
+                result_key_text.insert(tk.END, masked)
+                result_key_text.config(state=tk.DISABLED)
+                hybrid_status_var.set("Loaded")
+            else:
+                result_key_text.config(state=tk.NORMAL)
+                result_key_text.delete("1.0", tk.END)
+                result_key_text.config(state=tk.DISABLED)
+                hybrid_status_var.set("Not loaded")
         update_hybrid_key_displays()
 
         def generate_hybrid_key():
@@ -854,10 +877,26 @@ class QuantumKeyManagementSystem:
                 messagebox.showerror("Error", "Both Quantum and Kyber keys are required")
                 return
             try:
-                combined = self.quantum_key + self.kyber_key
-                hash_obj = SHA3_512.new()
-                hash_obj.update(combined.encode())
-                hybrid_result = hash_obj.hexdigest()
+                combined = (self.quantum_key + self.kyber_key).encode('utf-8')
+
+                salt = b'hybrid_key_salt'  
+
+                time_cost = 3      
+                memory_cost = 64 * 1024 
+                parallelism = 2     
+                hash_len = 64       
+
+                derived_key = hash_secret_raw(
+                    secret=combined,
+                    salt=salt,
+                    time_cost=time_cost,
+                    memory_cost=memory_cost,
+                    parallelism=parallelism,
+                    hash_len=hash_len,
+                    type=Type.ID
+                )
+                hybrid_result = derived_key.hex()
+
                 self.hybrid_key = hybrid_result
                 masked = '*' * len(hybrid_result)
                 result_key_text.config(state=tk.NORMAL)
@@ -866,6 +905,7 @@ class QuantumKeyManagementSystem:
                 result_key_text.config(state=tk.DISABLED)
                 hybrid_visible[0] = False
                 hybrid_view_button.config(text="View Key")
+                hybrid_status_var.set("Loaded")
                 messagebox.showinfo("Success", "Hybrid Key Generated Successfully!")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to generate hybrid key: {str(e)}")
@@ -890,13 +930,13 @@ class QuantumKeyManagementSystem:
             kyber_key_text.delete("1.0", tk.END)
             kyber_key_text.config(state=tk.DISABLED)
             kyber_status_var.set("Not loaded")
-            if hasattr(self, 'hybrid_key'):
-                self.hybrid_key = None
+            self.hybrid_key = None
             result_key_text.config(state=tk.NORMAL)
             result_key_text.delete("1.0", tk.END)
             result_key_text.config(state=tk.DISABLED)
             hybrid_name_entry.delete(0, tk.END)
             hybrid_password_entry.delete(0, tk.END)
+            hybrid_status_var.set("Not loaded")
             messagebox.showinfo("Cleared", "All hybrid key fields have been cleared")
             
         def save_hybrid_key():
