@@ -996,7 +996,7 @@ class BB84SenderGUI:
                 sim_circuit = self.current_circuit.copy()
                 sim_circuit.remove_final_measurements(inplace=True)
 
-                backend = AerSimulator.get_backend('statevector_simulator')
+                backend = AerSimulator(method='statevector')
                 job = transpile(sim_circuit, backend)
                 result = job.result()
                 statevector = result.get_statevector()
