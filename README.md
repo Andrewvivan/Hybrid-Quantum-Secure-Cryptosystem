@@ -6,8 +6,10 @@ This project is built with Django as the backend. To use this project, you need 
 You need to have the following installed on your system.
 ```
 DB Browser >= 3.10
-Django == 5.1.5
-Python >= 3.12
+Django == 5.1.7
+Python >= 3.11
+Qiskit == 1.4.2
+Qiskit AER == 0.17.0
 ```
 
 ### Follow the steps below to run the Hybrid Quantum Secure Cryptosystem on your PC.
@@ -55,4 +57,12 @@ So to create one!
 ##
 
 ### All the functionalities in our project are modular, except for those within a particular functionality. Therefore, run only the necessary operations that are needed to avoid port conflicts or WIN errors.
+
+### Before any presentations or reviews
+
+1. **Backup and delete** the old source code.  
+2. **Clone** the latest source code from this repository.  
+3. **Reinstall dependencies** using the updated `requirements.txt`.  
+4. **Check VPN connection**, specifically to the **German server** from [VPNBook](https://www.vpnbook.com/).  
+5. **Update VPN credentials** before proceeding.  
 
