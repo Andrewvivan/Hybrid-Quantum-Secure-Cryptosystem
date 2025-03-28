@@ -19,7 +19,7 @@ git clone https://github.com/Andrewvivan/Hybrid-Quantum-Secure-Cryptosystem.git
 ```
 * Open the project-level directory inside the "Hybrid-Quantum-Secure-Cryptosystem" folder in your console or any IDE.
 ```
-> cd Hybrid_Quantum_Secure_Cryptosystem
+> cd Hybrid-Quantum-Secure-Cryptosystem-main
 ```
 * It's best practice to run your projects in a virtual environment (VM) to avoid conflicts with other Python dependencies.
 So to create one!
