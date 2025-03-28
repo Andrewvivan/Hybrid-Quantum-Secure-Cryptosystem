@@ -97,8 +97,6 @@ Hybrid_Quantum_Secure_Cryptosystem/
 |
 |──── manage.py
 |
-|──── db.sqlite3
-|
 |──── folder_structure.txt
 |
 |──── requirements.txt
