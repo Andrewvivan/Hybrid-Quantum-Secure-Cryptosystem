@@ -170,23 +170,23 @@ class BB84ReceiverGUI:
         self.psk_entry.config(state='normal')
 
     def setup_public_comparison_frame(self, parent):
-        pcompare_frame = ttk.LabelFrame(parent, text="Public Comparison", padding="10")
+        pcompare_frame = ttk.LabelFrame(parent, text="Quantum Bit Error Rate (QBER) Estimation", padding="10")
         pcompare_frame.pack(fill='x', padx=5, pady=5)
 
         key_frame = ttk.Frame(pcompare_frame)
         key_frame.pack(fill='x', pady=5)
 
-        ttk.Label(key_frame, text="Quantum Key:").pack(side='left', padx=5)
+        ttk.Label(key_frame, text="Quantum Key Subset:").pack(side='left', padx=5)
         self.key_entry = ttk.Entry(key_frame, width=30, show="*")
         self.key_entry.pack(side='left', padx=5, expand=True, fill='x')
  
         key_button_frame = ttk.Frame(pcompare_frame)
         key_button_frame.pack(fill='x', pady=5)
         
-        ttk.Button(key_button_frame, text="Send Key", 
+        ttk.Button(key_button_frame, text="Send Key Subset", 
                 command=self.send_key).pack(side='left', padx=5)
         
-        ttk.Button(key_button_frame, text="Compare Key", 
+        ttk.Button(key_button_frame, text="Compare Key Subset", 
                 command=self.compare_keys).pack(side='left', padx=5)
 
     def setup_input_frame(self, parent):
@@ -356,7 +356,7 @@ class BB84ReceiverGUI:
                     for bit in measured_bitstring:
                         bob_measurements.append(int(bit))
 
-                self.output.insert(tk.END, f"\nBob's Bases: {bob_bases}\n")
+                self.output.insert(tk.END, f"\nBob's Bases: {bob_bases}\n\n")
                 self.output.insert(tk.END, f"Bob's Measurements: {bob_measurements}\n")
 
                 response_data = {
@@ -390,14 +390,13 @@ class BB84ReceiverGUI:
                 try:
                     self.server_socket.settimeout(1)
                     client_socket, addr = self.server_socket.accept()
-
                     data = client_socket.recv(16384).decode()
                     received_data = json.loads(data)
 
                     if 'request' in received_data and received_data['request'] == 'authenticate':
                         self.handle_auth_request(client_socket, received_data, addr)
-                        client_socket.close()  
-                        continue  
+                        client_socket.close()
+                        continue
 
                     if not self.is_authenticated:
                         client_socket.close()
@@ -406,7 +405,6 @@ class BB84ReceiverGUI:
 
                     self.client_socket = client_socket
                     self.last_client_ip = addr[0]
-
                     self.root.after(0, lambda: self.output.insert(tk.END, f"\nConnected to {addr}\n"))
 
                     if 'request' in received_data:
@@ -415,10 +413,10 @@ class BB84ReceiverGUI:
                             if key_hash:
                                 self.received_key_hash = key_hash
                                 response = {'status': 'received'}
-                                self.root.after(0, lambda: self.output.insert(tk.END, f"\nReceived key hash: {key_hash}\n"))
+                                self.root.after(0, lambda: self.output.insert(tk.END, f"\nReceived key subset hash: {key_hash}\n"))
+                                messagebox.showinfo("Info", "Key subset hash received! Stop Listening")
                             else:
                                 response = {'status': 'error', 'message': 'Invalid key data'}
-
                             client_socket.sendall(json.dumps(response).encode())
                             client_socket.close()
 
@@ -428,13 +426,9 @@ class BB84ReceiverGUI:
 
                     elif 'sender_bases' in received_data:
                         sender_bases = received_data.get('sender_bases')
-                        
                         if sender_bases and self.bob_bases and self.bob_measurements:
-                            matching_indices = [i for i in range(len(sender_bases)) 
-                                                if sender_bases[i] == self.bob_bases[i]]
-
+                            matching_indices = [i for i in range(len(sender_bases)) if sender_bases[i] == self.bob_bases[i]]
                             final_measurements = [self.bob_measurements[i] for i in matching_indices]
-
                             final_key = ''.join(str(bit) for bit in final_measurements)
                             self.final_key = final_key
 
@@ -442,20 +436,19 @@ class BB84ReceiverGUI:
                                 'bob_bases': self.bob_bases,
                                 'bob_measurements': self.bob_measurements
                             }
-                            
                             client_socket.sendall(json.dumps(response_data).encode())
 
                             self.root.after(0, lambda: self.display_results(
-                                None,  
-                                sender_bases, 
-                                self.bob_bases, 
+                                None,
+                                sender_bases,
+                                self.bob_bases,
                                 self.bob_measurements,
                                 matching_indices
                             ))
                         else:
                             response = {'status': 'error', 'message': 'Missing data for basis comparison'}
                             client_socket.sendall(json.dumps(response).encode())
-                        
+
                         client_socket.close()
                         self.client_socket = None
 
@@ -468,12 +461,17 @@ class BB84ReceiverGUI:
                             self.root.after(0, lambda: self.output.insert(
                                 tk.END, f"Quantum state received. Time taken: {elapsed:.6f} seconds. Start measuring.\n"))
                         else:
-                            self.root.after(0, lambda: self.output.insert(
-                                tk.END, "Quantum state received. Start measuring.\n"))
+                            self.root.after(0, lambda: self.output.insert(tk.END, "Quantum state received. Start measuring.\n"))
                         self.root.after(0, lambda: self.measure_button.config(state='normal'))
 
                 except socket.timeout:
                     continue
+
+                except OSError as e:
+                    if not self.listening:
+                        break
+                    else:
+                        self.root.after(0, lambda: self.display_error(f"Socket error: {e}"))
 
         except Exception as e:
             if self.listening:
@@ -481,7 +479,10 @@ class BB84ReceiverGUI:
 
         finally:
             if hasattr(self, 'server_socket'):
-                self.server_socket.close()
+                try:
+                    self.server_socket.close()
+                except Exception:
+                    pass
             self.listening = False
             self.root.after(0, lambda: self.listen_button.config(text="Start Listening"))
 
@@ -553,28 +554,37 @@ class BB84ReceiverGUI:
         try:
             key_hash = hashlib.sha256(key.encode()).hexdigest()
             self.sent_key_hash = key_hash
-            
-            port = int(self.port_entry.get())
+
+            try:
+                port = int(self.port_entry.get())
+            except ValueError:
+                messagebox.showwarning("Warning", "Invalid port number.")
+                return
+
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((self.last_client_ip, port))
                 key_data = {'request': 'get_key', 'key_hash': key_hash}
                 s.sendall(json.dumps(key_data).encode())
 
-                s.settimeout(10)  
+                s.settimeout(10)
                 try:
                     response = s.recv(4096).decode()
                     response_data = json.loads(response)
                     
                     if response_data.get('status') == 'received':
-                        self.output.insert(tk.END, f"\nKey hash sent successfully to {self.last_client_ip}.\n")
+                        self.output.insert(tk.END, f"\nKey subset hash sent successfully to {self.last_client_ip}.\n")
+                        messagebox.showinfo("Info", "Key subset sent! Please start Listening")
                     else:
                         self.output.insert(tk.END, "\nError: Key hash was not acknowledged.\n")
                 except socket.timeout:
-                    self.output.insert(tk.END, "\nTimeout: No response from sender.\n")
+                    self.output.insert(tk.END, "\nTimeout: No response from receiver.\n")
+
+            self.key_entry.delete(0, tk.END)
+
         except Exception as e:
             self.output.insert(tk.END, f"\nError sending key: {e}\n")
             messagebox.showerror("Error", str(e))
-    
+
     def check_queue(self):
         try:
             while True:
@@ -634,6 +644,9 @@ class BB84ReceiverGUI:
             subset_length = max(1, len(final_key) * 20 // 100)
             key_subset = final_key[:subset_length]
             self.output.insert(tk.END, f"\nKey subset for verification: {key_subset}\n")
+
+            self.key_entry.delete(0, tk.END)
+            self.key_entry.insert(0, key_subset)
 
         matching_bases = len(kept_indices) if kept_indices else 0
         total_qubits = len(sender_bases)
