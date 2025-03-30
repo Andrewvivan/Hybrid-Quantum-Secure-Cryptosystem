@@ -72,6 +72,36 @@ class BB84SenderGUI:
         input_frame = ttk.LabelFrame(parent, text="Configuration", padding="10")
         input_frame.pack(fill='x', padx=5, pady=5)
 
+        key_frame = ttk.LabelFrame(input_frame, text="Kyber Key Processing", padding="10")
+        key_frame.pack(fill='x', padx=5, pady=5)
+
+        public_key_frame = ttk.Frame(key_frame)
+        public_key_frame.pack(fill='x', pady=5)
+        ttk.Label(public_key_frame, text="Receiver's Public Key:").pack(side='left')
+        self.public_key_entry = ttk.Entry(public_key_frame, width=50)
+        self.public_key_entry.pack(side='left', padx=5)
+
+        ttk.Button(key_frame, text="Process Public Key", 
+                command=self.process_public_key).pack(pady=5)
+
+        encap_frame = ttk.Frame(key_frame)
+        encap_frame.pack(fill='x', pady=5)
+        ttk.Label(encap_frame, text="Encapsulated Key:").pack(side='left')
+        self.encapsulated_key_text = ttk.Entry(encap_frame, width=50)
+        self.encapsulated_key_text.pack(side='left', padx=5)
+
+        ttk.Button(encap_frame, text="Copy", 
+                command=lambda: self.copy_to_clipboard(self.encapsulated_key_text.get())).pack(side='left')
+
+        secret_frame = ttk.Frame(key_frame)
+        secret_frame.pack(fill='x', pady=5)
+        ttk.Label(secret_frame, text="Shared Secret:").pack(side='left')
+        self.shared_secret_text = ttk.Entry(secret_frame, width=50, show="*")
+        self.shared_secret_text.pack(side='left', padx=5)
+
+        ttk.Button(secret_frame, text="Copy", 
+                command=lambda: self.copy_to_clipboard(self.shared_secret_text.get())).pack(side='left')
+
         listen_auth_frame = ttk.Frame(input_frame)
         listen_auth_frame.pack(fill='x', padx=5, pady=5)
 
@@ -80,7 +110,6 @@ class BB84SenderGUI:
 
         listen_config_frame = ttk.Frame(listen_frame)
         listen_config_frame.pack(fill='x', pady=5)
-
         ttk.Label(listen_config_frame, text="Listen on:").pack(side='left', padx=5)
         self.listen_host_entry = ttk.Entry(listen_config_frame, width=15)
         self.listen_host_entry.pack(side='left', padx=5)
@@ -92,38 +121,10 @@ class BB84SenderGUI:
         self.listen_port_entry.insert(0, "12345")
 
         self.listen_button = ttk.Button(listen_frame, text="Start Listening",
-                                    command=self.toggle_listening)
+                                        command=self.toggle_listening)
         self.listen_button.pack(pady=5)
 
         self.setup_auth_frame(listen_auth_frame)
-
-        key_frame = ttk.LabelFrame(input_frame, text="Kyber Key Management", padding="10")
-        key_frame.pack(fill='x', padx=5, pady=5)
-
-        public_key_frame = ttk.Frame(key_frame)
-        public_key_frame.pack(fill='x', pady=5)
-        ttk.Label(public_key_frame, text="Receiver's Public Key:").pack(side='left')
-        self.public_key_entry = ttk.Entry(public_key_frame, width=50)
-        self.public_key_entry.pack(side='left', padx=5)
-
-        ttk.Button(key_frame, text="Process Public Key", 
-                  command=self.process_public_key).pack(pady=5)
-
-        encap_frame = ttk.Frame(key_frame)
-        encap_frame.pack(fill='x', pady=5)
-        ttk.Label(encap_frame, text="Encapsulated Key:").pack(side='left')
-        self.encapsulated_key_text = ttk.Entry(encap_frame, width=50)
-        self.encapsulated_key_text.pack(side='left', padx=5)
-        ttk.Button(encap_frame, text="Copy", 
-                  command=lambda: self.copy_to_clipboard(self.encapsulated_key_text.get())).pack(side='left')
-
-        secret_frame = ttk.Frame(key_frame)
-        secret_frame.pack(fill='x', pady=5)
-        ttk.Label(secret_frame, text="Shared Secret:").pack(side='left')
-        self.shared_secret_text = ttk.Entry(secret_frame, width=50, show="*")
-        self.shared_secret_text.pack(side='left', padx=5)
-        ttk.Button(secret_frame, text="Copy", 
-                  command=lambda: self.copy_to_clipboard(self.shared_secret_text.get())).pack(side='left')
 
         vpn_frame = ttk.Frame(input_frame)
         vpn_frame.pack(fill='x', pady=5)
@@ -134,11 +135,11 @@ class BB84SenderGUI:
 
         conn_frame = ttk.Frame(input_frame)
         conn_frame.pack(fill='x', pady=5)
-        
         ttk.Label(conn_frame, text="Receiver IP:").pack(side='left', padx=5)
+
         self.host_entry = ttk.Entry(conn_frame, width=15)
         self.host_entry.pack(side='left', padx=5)
-        
+
         ttk.Label(conn_frame, text="Port:").pack(side='left', padx=5)
         self.port_entry = ttk.Entry(conn_frame, width=10)
         self.port_entry.pack(side='left', padx=5)
@@ -146,15 +147,14 @@ class BB84SenderGUI:
 
         button_frame = ttk.Frame(input_frame)
         button_frame.pack(fill='x', pady=5)
-        
         ttk.Button(button_frame, text="Send Encapsulated Key", 
-                  command=self.send_encapsulated_key).pack(side='left', padx=5)
+                command=self.send_encapsulated_key).pack(side='left', padx=5)
         
         ttk.Button(button_frame, text="Clear Output",
-                  command=self.clear_output).pack(side='left', padx=5)
-                  
+                command=self.clear_output).pack(side='left', padx=5)
+        
         ttk.Button(button_frame, text="Refresh IP Status",
-                  command=self.refresh_vpn_status).pack(side='left', padx=5)
+                command=self.refresh_vpn_status).pack(side='left', padx=5)
         
     def setup_auth_frame(self, parent):
         auth_frame = ttk.LabelFrame(parent, text="Authentication", padding="10")
