@@ -42,7 +42,7 @@ def decrypt_data(encrypted_dict, key):
 class BB84ReceiverGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Kyber (Post Quantum Cryptography) - Receiver")
+        self.root.title("Kyber Key Exchange - Receiver")
         self.root.geometry("800x600")
 
         self.public_key = None
@@ -67,7 +67,7 @@ class BB84ReceiverGUI:
         input_frame = ttk.LabelFrame(parent, text="Configuration", padding="10")
         input_frame.pack(fill='x', padx=5, pady=5)
 
-        key_frame = ttk.LabelFrame(input_frame, text="Kyber Key Management", padding="10")
+        key_frame = ttk.LabelFrame(input_frame, text="Kyber Key Processing", padding="10")
         key_frame.pack(fill='x', padx=5, pady=5)
 
         ttk.Button(key_frame, text="Generate Kyber Keys", 
