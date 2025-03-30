@@ -158,25 +158,25 @@ class BB84SenderGUI:
         self.psk_entry.config(state='normal')
 
     def setup_public_comparison_frame(self, parent):
-        pcompare_frame = ttk.LabelFrame(parent, text="Public Comparison", padding="10")
+        pcompare_frame = ttk.LabelFrame(parent, text="Quantum Bit Error Rate (QBER) Estimation", padding="10")
         pcompare_frame.pack(fill='x', padx=5, pady=5)
 
         key_frame = ttk.Frame(pcompare_frame)
         key_frame.pack(fill='x', pady=5)
 
-        ttk.Label(key_frame, text="Quantum Key:").pack(side='left', padx=5)
+        ttk.Label(key_frame, text="Quantum Key Subset:").pack(side='left', padx=5)
         self.key_entry = ttk.Entry(key_frame, width=30, show="*")
         self.key_entry.pack(side='left', padx=5, expand=True, fill='x')
 
         key_button_frame = ttk.Frame(pcompare_frame)
         key_button_frame.pack(fill='x', pady=5)
         
-        ttk.Button(key_button_frame, text="Send Key", 
+        ttk.Button(key_button_frame, text="Send Key Subset", 
                 command=self.send_key).pack(side='left', padx=5)
         
-        ttk.Button(key_button_frame, text="Compare Key", 
+        ttk.Button(key_button_frame, text="Compare Key Subset", 
                 command=self.compare_keys).pack(side='left', padx=5)
-
+        
     def setup_input_frame(self, parent):
         input_frame = ttk.LabelFrame(parent, text="Configuration", padding="10")
         input_frame.pack(fill='x', padx=5, pady=5)
@@ -432,7 +432,7 @@ class BB84SenderGUI:
             
             self.output.delete(1.0, tk.END)
             self.output.insert(tk.END, "Starting quantum transmission...\n\n")
-            self.output.insert(tk.END, "Alice's Bits: " + str(sender_bits) + "\n")
+            self.output.insert(tk.END, "Alice's Bits: " + str(sender_bits) + "\n\n")
             self.output.insert(tk.END, "Alice's Bases: " + str(sender_bases) + "\n\n")
             
             # Create a quantum circuit to encode Alice's qubits
@@ -464,8 +464,7 @@ class BB84SenderGUI:
                 'n_bits': n_bits,
                 'start_time': start_time
             }
-            
-            # Try Eve IP
+
             if eve_ip:
                 response_data, eve_present = self.send_data(eve_ip, port_eve, quantum_state)
             else:
@@ -509,7 +508,10 @@ class BB84SenderGUI:
 
     def stop_listening(self):
         if hasattr(self, 'server_socket'):
-            self.server_socket.close()
+            try:
+                self.server_socket.close()
+            except Exception as e:
+                self.display_error(f"Error closing socket: {e}")
         self.listening = False
         self.listen_button.config(text="Start Listening")
         self.output.insert(tk.END, "Stopped listening.\n")
@@ -519,65 +521,78 @@ class BB84SenderGUI:
             while self.listening:
                 try:
                     self.server_socket.settimeout(1)
-                    
                     client_socket, addr = self.server_socket.accept()
-                    self.output.insert(tk.END, f"\nConnected to {addr}\n")
+                    self.root.after(0, lambda: self.output.insert(tk.END, f"\nConnected to {addr}\n"))
 
                     data = client_socket.recv(16384).decode()
                     received_data = json.loads(data)
-    
+
                     if 'request' in received_data and received_data['request'] == 'get_key':
                         key_hash = received_data.get('key_hash')
                         if key_hash:
                             self.received_key_hash = key_hash
                             response = {'status': 'received'}
-                            self.output.insert(tk.END, f"\nReceived key hash: {key_hash}\n")
+                            self.root.after(0, lambda: self.output.insert(tk.END, f"\nReceived key subset hash: {key_hash}\n"))
+                            self.root.after(0, lambda: messagebox.showinfo("Info", "Key subset hash received! Stop Listening"))
                         else:
                             response = {'status': 'error'}
                         
                         client_socket.sendall(json.dumps(response).encode())
                         client_socket.close()
-    
+
                 except socket.timeout:
                     continue
+
+                except OSError as e:
+                    if not self.listening:
+                        break
+                    else:
+                        self.root.after(0, lambda: self.display_error(f"Socket error: {e}"))
+                        break
+
                 except Exception as e:
-                    self.output.insert(tk.END, f"\nError in connection: {e}\n")
+                    self.root.after(0, lambda e=e: self.display_error(f"Error in connection: {e}"))
                     break
+
         except Exception as e:
             if self.listening:
-                self.output.insert(tk.END, f"\nError in listening: {e}\n")
+                self.root.after(0, lambda: self.output.insert(tk.END, f"\nError in listening: {e}\n"))
         finally:
             self.listening = False
-            self.listen_button.config(text="Start Listening")
+            self.root.after(0, lambda: self.listen_button.config(text="Start Listening"))
 
     def send_key(self):
         key = self.key_entry.get().strip()
         if not key:
             messagebox.showwarning("Warning", "Key cannot be empty")
             return
-    
+        
         receiver_ip = self.host_entry.get().strip()
         if not receiver_ip:
             messagebox.showwarning("Warning", "Receiver IP is required")
             return
-    
+        
         try:
             key_hash = hashlib.sha256(key.encode()).hexdigest()
             self.sent_key_hash = key_hash
-    
+        
             port = int(self.port_entry.get())
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((receiver_ip, port))
                 key_data = {'request': 'get_key', 'key_hash': key_hash}
                 s.sendall(json.dumps(key_data).encode())
-
+        
                 response = s.recv(4096).decode()
                 response_data = json.loads(response)
-    
+        
                 if response_data.get('status') == 'received':
-                    self.output.insert(tk.END, f"\nKey hash sent successfully to {receiver_ip}.\n")
+                    self.output.insert(tk.END, f"\nKey subset hash sent successfully to {receiver_ip}.\n")
+                    messagebox.showinfo("Info", "Key subset sent! Please start Listening")
                 else:
                     self.output.insert(tk.END, f"\nError: Key hash was not acknowledged.\n")
+
+            self.key_entry.delete(0, tk.END)
+        
         except Exception as e:
             self.display_error(f"Error sending key: {e}")
         
@@ -1225,8 +1240,7 @@ class BB84SenderGUI:
         self.sender_bases = sender_bases
         self.bob_bases = bob_bases
         self.bob_measurements = bob_measurements
-        kept_indices = [i for i in range(len(sender_bits)) 
-                       if sender_bases[i] == bob_bases[i]]
+        kept_indices = [i for i in range(len(sender_bits)) if sender_bases[i] == bob_bases[i]]
         
         self.output.insert(tk.END, "\nBB84 Protocol Results\n")
         self.output.insert(tk.END, "-" * 70 + "\n")
@@ -1237,28 +1251,29 @@ class BB84SenderGUI:
         for i in range(len(sender_bits)):
             kept = "Yes" if i in kept_indices else "No"
             self.output.insert(tk.END, 
-                             f"{i}\t{sender_bits[i]}\t{sender_bases[i]}\t"
-                             f"{bob_bases[i]}\t{bob_measurements[i]}\t{kept}\n")
-
+                            f"{i}\t{sender_bits[i]}\t{sender_bases[i]}\t"
+                            f"{bob_bases[i]}\t{bob_measurements[i]}\t{kept}\n")
+        
         sender_key = [sender_bits[i] for i in kept_indices]
         receiver_key = [bob_measurements[i] for i in kept_indices]
         
         final_key = ''.join(str(bit) for bit in sender_key)
-        
         self.output.insert(tk.END, "-" * 70 + "\n")
         self.output.insert(tk.END, f"\nFinal shared key: {final_key}\n")
-        
         self.final_key = final_key
 
         subset_length = max(1, len(final_key) * 20 // 100)
         key_subset = final_key[:subset_length]
         self.output.insert(tk.END, f"\nKey subset for verification: {key_subset}\n")
+
+        self.key_entry.delete(0, tk.END)
+        self.key_entry.insert(0, key_subset)
         
         matching_bases = len(kept_indices)
         self.output.insert(tk.END, f"\nTotal qubits: {len(sender_bits)}\n")
         self.output.insert(tk.END, f"Matching Bases: {matching_bases}\n")
         self.output.insert(tk.END, 
-                          f"Key Generation Rate: {(matching_bases/len(sender_bits))*100:.2f}%\n")
+                        f"Key Generation Rate: {(matching_bases/len(sender_bits))*100:.2f}%\n")
     
     def display_error(self, error_message):
         self.output.insert(tk.END, f"\nError: {error_message}\n")
