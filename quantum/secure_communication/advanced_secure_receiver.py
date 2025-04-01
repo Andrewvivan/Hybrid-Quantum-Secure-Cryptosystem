@@ -280,8 +280,18 @@ class QuantumSecureReceiver:
 
     def generate_key_from_quantum_key(self, quantum_key):
         start_time = time.perf_counter()
-        salt = b'quantum_secure_salt'
-        key = PBKDF2(quantum_key.encode('utf-8'), salt, dkLen=32, count=100000, hmac_hash_module=SHA3_512)
+        
+        salt = b'quantum_secure_salt'  
+        key = hash_secret_raw(
+            secret=quantum_key.encode('utf-8'),
+            salt=salt,
+            time_cost=2,         
+            memory_cost=65536,   
+            parallelism=4,       
+            hash_len=32,         
+            type=Type.ID         
+        )
+        
         end_time = time.perf_counter()
         duration_ms = (end_time - start_time) * 1000
         self.log_performance("key_generation_quantum", len(quantum_key), duration_ms, category="message")
