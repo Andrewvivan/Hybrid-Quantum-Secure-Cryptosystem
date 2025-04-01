@@ -465,9 +465,9 @@ class QuantumSecureSender:
                         self.socket.close()
                         return False
                     self.keys_incorrect = True
-                    self.display_message("Proceeding with raw encrypted data due to key mismatch")
+                    self.display_message("⚠️ KEY MISMATCH ACCEPTED! Proceeding with encrypted data")
                 elif status == "OK":
-                    self.display_message("keys match ready to chat")
+                    self.display_message("✅ KEYS MATCH READY TO CHAT!")
                 else:
                     messagebox.showerror("Ephemeral Key Exchange Error", "Unknown key status received")
                     self.socket.close()
@@ -637,7 +637,7 @@ class QuantumSecureSender:
                 else:
                     if self.recv_buffer:
                         if self.keys_incorrect:
-                            self.display_message(f"Receiver (raw): {self.recv_buffer}")
+                            self.display_message(f"[Receiver]: {self.recv_buffer}")
                         else:
                             try:
                                 decrypted_message = self.decrypt_message(self.recv_buffer, self.symmetric_key)
