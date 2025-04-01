@@ -376,7 +376,7 @@ class QuantumSecureReceiver:
                 if response:
                     self.show_encrypted = True
                     self.client_socket.send("KEY_MISMATCH_ACCEPTED".encode('utf-8'))
-                    self.display_message("Key mismatch accepted. Displaying encrypted data.")
+                    self.display_message("⚠️ KEY MISMATCH ACCEPTED! Proceeding with encrypted data")
                 else:
                     self.client_socket.send("KEY_MISMATCH_REJECTED".encode('utf-8'))
                     self.client_socket.close()
@@ -443,7 +443,8 @@ class QuantumSecureReceiver:
             server_response = hmac.new(self.symmetric_key, str(client_timestamp).encode('utf-8'), hashlib.sha256).hexdigest()
             self.client_socket.sendall(("SERVER_RESPONSE:" + server_response).encode('utf-8'))
 
-            self.display_message("Authentication successful and keys match. Ready to chat!")
+            self.display_message("performing ephemeral key exchange and updating the session key please wait")
+            self.display_message("✅ Authentication and Ephemeral key exchange successful. Keys match. Ready to chat!")
             return True
         except Exception as e:
             messagebox.showerror("Authentication Error", str(e))
