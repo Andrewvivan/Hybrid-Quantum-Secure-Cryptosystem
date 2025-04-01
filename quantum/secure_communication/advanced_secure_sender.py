@@ -436,7 +436,7 @@ class QuantumSecureSender:
                 if sender_decision:
                     self.show_encrypted = True
                     self.socket.send("SENDER_KEY_MISMATCH_ACCEPTED".encode('utf-8'))
-                    self.display_message("Key mismatch accepted. Displaying encrypted data.")
+                    self.display_message("⚠️ KEY MISMATCH ACCEPTED! Proceeding with encrypted data")
                 else:
                     self.socket.send("SENDER_KEY_MISMATCH_REJECTED".encode('utf-8'))
                     self.socket.close()
@@ -511,8 +511,8 @@ class QuantumSecureSender:
                 messagebox.showerror("Authentication Error", "Server authentication failed")
                 self.socket.close()
                 return False
-
-            self.display_message("Authentication successful and keys match. Ready to chat!")
+            self.display_message("performing ephemeral key exchange and updating the session key please wait")
+            self.display_message("✅ Authentication and Ephemeral key exchange successful. Keys match. Ready to chat!")
             return True
         except Exception as e:
             messagebox.showerror("Authentication Error", str(e))
