@@ -881,8 +881,8 @@ class QuantumKeyManagementSystem:
                 salt = b'hybrid_key_salt'  
 
                 time_cost = 3      
-                memory_cost = 64 * 1024 
-                parallelism = 2     
+                memory_cost = 102400 
+                parallelism = 8     
                 hash_len = 64       
 
                 derived_key = hash_secret_raw(
