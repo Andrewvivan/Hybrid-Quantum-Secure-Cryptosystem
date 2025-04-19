@@ -1,5 +1,7 @@
 Hybrid_Quantum_Secure_Cryptosystem/
 |
+├── benchmarks/
+|
 ├── quantum/
 │   ├── __init__.py
 │   ├── apps.py
@@ -88,15 +90,15 @@ Hybrid_Quantum_Secure_Cryptosystem/
 |           ├── post_quantum_cryptography.html
 │           ├── result.html
 |
-|──── quantum_app/
+├── quantum_app/
 |       ├── __init__.py
 |       ├── asgi.py
 |       ├── settings.py
 |       ├── wsgi.py
 |       ├── urls.py
 |
-|──── manage.py
+├── manage.py
 |
-|──── folder_structure.txt
+├── folder_structure.txt
 |
-|──── requirements.txt
+├── requirements.txt
