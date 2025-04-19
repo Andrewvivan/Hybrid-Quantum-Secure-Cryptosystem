@@ -5,6 +5,8 @@ django-sockets
 django-cryptography
 datetime
 matplotlib
+pandas
+openpyxl
 pycryptodome
 pylatexenc
 qiskit==1.4.2
