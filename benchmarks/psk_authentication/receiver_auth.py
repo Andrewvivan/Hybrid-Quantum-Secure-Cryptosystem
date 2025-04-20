@@ -6,9 +6,6 @@ import statistics
 import os
 import gc
 import asyncio
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.backends import default_backend
 
 DEFAULT_PSK = "650f641e0666d6e703876de63c61f80b482cdbdc213016dbb582b58c95fa2ceb"
 DEFAULT_HOST = "0.0.0.0"
@@ -18,37 +15,8 @@ NUM_TESTS = 100
 metrics = {
     'connection_times': [],
     'authentication_times': [],
-    'waiting_times': [],
     'total_round_times': []
 }
-
-def derive_aes_key(psk):
-    return hashlib.sha256(psk.encode()).digest()
-
-def encrypt_data(data, key):
-    if isinstance(data, str):
-        data = data.encode()
-
-    iv = os.urandom(16)
-    padder = padding.PKCS7(algorithms.AES.block_size).padder()
-    padded_data = padder.update(data) + padder.finalize()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-    encryptor = cipher.encryptor()
-    encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
-    return {
-        'iv': iv.hex(),
-        'data': encrypted_data.hex()
-    }
-
-def decrypt_data(encrypted_dict, key):
-    iv = bytes.fromhex(encrypted_dict['iv'])
-    encrypted_data = bytes.fromhex(encrypted_dict['data'])
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-    decryptor = cipher.decryptor()
-    padded_data = decryptor.update(encrypted_data) + decryptor.finalize()
-    unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
-    data = unpadder.update(padded_data) + unpadder.finalize()
-    return data.decode()
 
 def get_local_ip():
     try:
@@ -61,19 +29,15 @@ def get_local_ip():
         print(f"Error getting IP address: {e}")
         return "127.0.0.1"
 
-async def handle_auth_request(reader, writer, psk, psk_hash, completed_rounds, connection_start_time):
-    connection_end_time = time.time_ns()
-    connection_time = connection_end_time - connection_start_time
-    metrics['connection_times'].append(connection_time)
-
+async def handle_auth_request(reader, writer, psk, psk_hash, completed_rounds):
     total_start_time = time.time_ns()
     
     try:
-        waiting_start_time = time.time_ns()
+        conn_start_time = time.time_ns()
         data = await reader.read(16384)
-        waiting_end_time = time.time_ns()
-
-        metrics['waiting_times'].append(waiting_end_time - waiting_start_time)
+        conn_end_time = time.time_ns()
+        
+        metrics['connection_times'].append(conn_end_time - conn_start_time)
 
         auth_start_time = time.time_ns()
         
@@ -81,39 +45,27 @@ async def handle_auth_request(reader, writer, psk, psk_hash, completed_rounds, c
         
         if 'request' in received_data and received_data['request'] == 'authenticate':
             if received_data['psk_hash'] == psk_hash:
-                aes_key = derive_aes_key(psk)
-                encrypted_sender_ip = received_data.get('sender_ip', {})
+                response = {
+                    'status': 'authenticated',
+                    'round': received_data.get('round', 0)
+                }
+
+                auth_end_time = time.time_ns()
+                auth_time_ns = (auth_end_time - auth_start_time)
+                metrics['authentication_times'].append(auth_time_ns)
+
+                writer.write(json.dumps(response).encode())
+                await writer.drain()
+
+                total_end_time = time.time_ns()
+                total_time_ns = (total_end_time - total_start_time)
+                metrics['total_round_times'].append(total_time_ns)
                 
-                try:
-                    sender_ip = decrypt_data(encrypted_sender_ip, aes_key)
-                    encrypted_receiver_ip = encrypt_data(get_local_ip(), aes_key)
-                    
-                    response = {
-                        'status': 'authenticated',
-                        'receiver_ip': encrypted_receiver_ip,
-                        'round': received_data.get('round', 0)
-                    }
-
-                    auth_end_time = time.time_ns()
-                    auth_time_ns = (auth_end_time - auth_start_time)
-                    metrics['authentication_times'].append(auth_time_ns)
-
-                    writer.write(json.dumps(response).encode())
-                    await writer.drain()
-
-                    total_end_time = time.time_ns()
-                    total_time_ns = (total_end_time - total_start_time)
-                    metrics['total_round_times'].append(total_time_ns)
-                    
-                    current_round = received_data.get('round', 0)
-                    print(f"Round {current_round} completed")
-                    
-                    completed_rounds.append(current_round)
-                    return True
-                except Exception as e:
-                    response = {'status': 'failed', 'error': str(e)}
-                    writer.write(json.dumps(response).encode())
-                    await writer.drain()
+                current_round = received_data.get('round', 0)
+                print(f"Round {current_round} completed")
+                
+                completed_rounds.append(current_round)
+                return True
             else:
                 response = {'status': 'failed', 'reason': 'hash_mismatch'}
                 writer.write(json.dumps(response).encode())
@@ -135,15 +87,8 @@ async def start_receiver(host=DEFAULT_HOST, port=DEFAULT_PORT, psk=DEFAULT_PSK):
     
     completed_rounds = []
 
-    connection_start_time = time.time_ns()
-
-    first_connection_received = False
-    
     async def connection_handler(reader, writer):
-        nonlocal first_connection_received
-        if not first_connection_received:
-            first_connection_received = True
-        await handle_auth_request(reader, writer, psk, psk_hash, completed_rounds, connection_start_time)
+        await handle_auth_request(reader, writer, psk, psk_hash, completed_rounds)
     
     server = await asyncio.start_server(
         connection_handler,
@@ -180,7 +125,6 @@ def display_benchmark_results():
     metrics_to_display = [
         ("Connection Time", metrics.get('connection_times', [])),
         ("Authentication Processing Time", metrics.get('authentication_times', [])),
-        ("Waiting Time", metrics.get('waiting_times', [])),
         ("Total Round Time", metrics.get('total_round_times', []))
     ]
     
