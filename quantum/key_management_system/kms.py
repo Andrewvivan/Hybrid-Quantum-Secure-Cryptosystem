@@ -609,12 +609,10 @@ class QuantumKeyManagementSystem:
                 if not all(bit in "01" for bit in key_content):
                     messagebox.showerror("Error", "Quantum key must contain only 0s and 1s")
                     return
-            elif key_type == "kyber":
-                try:
-                    int(key_content, 16)
-                except ValueError:
-                    messagebox.showerror("Error", "Kyber key must be a valid hexadecimal value")
-                    return
+                elif key_type == "kyber":
+                    if not re.match(r'^[0-9A-Fa-f]+$', key_content):
+                        messagebox.showerror("Error", "Kyber key must be a valid hexadecimal value")
+                        return
             result = self.encrypt_quantum_key(pwd, key_content)
             if result:
                 encrypted_key, key_hmac, salt, iv_b64 = result
