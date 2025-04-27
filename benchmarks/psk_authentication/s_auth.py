@@ -35,11 +35,9 @@ async def run_authentication_round(receiver_ip, port, psk, round_num):
     
     try:
         total_start_time = time.time_ns()
-        
-        # Step 1: Establish connection
+
         reader, writer = await asyncio.open_connection(receiver_ip, port)
-        
-        # Send connection request and measure connection time
+
         conn_request = {
             'request': 'connect',
             'round': round_num
@@ -48,8 +46,7 @@ async def run_authentication_round(receiver_ip, port, psk, round_num):
         conn_start_time = time.time_ns()
         writer.write(json.dumps(conn_request).encode())
         await writer.drain()
-        
-        # Wait for connection acknowledgement
+
         conn_response_data = await reader.read(16384)
         conn_response = json.loads(conn_response_data.decode())
         conn_end_time = time.time_ns()
@@ -59,11 +56,9 @@ async def run_authentication_round(receiver_ip, port, psk, round_num):
             writer.close()
             await writer.wait_closed()
             return False
-        
-        # Record connection establishment time
+
         metrics['connection_times'].append(conn_end_time - conn_start_time)
-        
-        # Step 2: Authenticate
+
         auth_request = {
             'request': 'authenticate',
             'psk_hash': psk_hash,
@@ -73,16 +68,13 @@ async def run_authentication_round(receiver_ip, port, psk, round_num):
         auth_start_time = time.time_ns()
         writer.write(json.dumps(auth_request).encode())
         await writer.drain()
-        
-        # Wait for authentication response
+
         auth_response_data = await reader.read(16384)
         auth_response = json.loads(auth_response_data.decode())
         auth_end_time = time.time_ns()
-        
-        # Record authentication processing time
+
         metrics['authentication_times'].append(auth_end_time - auth_start_time)
-        
-        # Record total round time
+
         total_end_time = time.time_ns()
         metrics['total_round_times'].append(total_end_time - total_start_time)
         
