@@ -20,7 +20,7 @@ import hmac
 import time
 from datetime import datetime
 import pandas as pd
-from argon2.low_level import hash_secret_raw, Type #type:ignore
+from argon2.low_level import hash_secret_raw, Type
 from kyber_wrapper768 import encapsulate
 
 class QuantumSecureSender:
@@ -41,7 +41,6 @@ class QuantumSecureSender:
 
         self.recv_buffer = ""
         self.message_send_times = {}
-        self.sequence_number = 0
         self.logs = []
 
     def center_window(self, width, height):
@@ -414,12 +413,9 @@ class QuantumSecureSender:
             return
         try:
             timestamp = int(time.time())
-            message_with_seq = f"{self.sequence_number}:{timestamp}:{message}"
-            encrypted_message = self.encrypt_message(message_with_seq, self.symmetric_key)
+            encrypted_message = self.encrypt_message(message, self.symmetric_key)
             self.socket.send(encrypted_message.encode('utf-8'))
-            self.message_send_times[str(self.sequence_number)] = time.perf_counter()
             self.display_message(f"You: {message}")
-            self.sequence_number += 1
             self.message_entry.delete(0, tk.END)
         except Exception as e:
             messagebox.showerror("Send Error", str(e))
@@ -508,27 +504,7 @@ class QuantumSecureSender:
                         try:
                             recv_time = time.perf_counter()
                             decrypted_message = self.decrypt_message(self.recv_buffer, self.symmetric_key)
-                            parts = decrypted_message.split(":", 2)
-                            if len(parts) == 3 and parts[0].isdigit():
-                                seq = int(parts[0])
-                                if seq != self.sequence_number:
-                                    self.display_message("Message sequence number mismatch. Possible replay attack.")
-                                    self.sequence_number = seq + 1
-                                else:
-                                    self.sequence_number += 1
-                                if str(seq) in self.message_send_times:
-                                    send_time = self.message_send_times.pop(str(seq))
-                                    rtt_ms = (recv_time - send_time) * 1000
-                                    log_entry = {
-                                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                        "event": "Message Round Trip",
-                                        "message": parts[2],
-                                        "round_trip_time_ms": rtt_ms
-                                    }
-                                    self.logs.append(log_entry)
-                                self.display_message(f"Receiver: {parts[2]}")
-                            else:
-                                self.display_message(f"Receiver: {decrypted_message}")
+                            self.display_message(f"Receiver: {decrypted_message}")
                         except Exception:
                             if self.show_encrypted:
                                 self.display_message(f"[Receiver]: {self.recv_buffer}")
