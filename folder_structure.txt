@@ -48,7 +48,6 @@ Hybrid_Quantum_Secure_Cryptosystem/
 |   |
 |   |──── secure_communication/
 |   |       ├── __init__.py
-│   │       ├── reference_implementations/
 │   │       ├── basic_secure_sender.py
 │   │       ├── basic_secure_receiver.py
 │   │       ├── standard_secure_sender.py
