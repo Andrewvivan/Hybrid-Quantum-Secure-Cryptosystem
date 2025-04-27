@@ -33,7 +33,6 @@ async def handle_client(reader, writer, psk, psk_hash, completed_rounds):
     total_start_time = time.time_ns()
     
     try:
-        # Step 1: Handle connection request
         conn_data = await reader.read(16384)
         conn_request = json.loads(conn_data.decode())
         
@@ -41,13 +40,11 @@ async def handle_client(reader, writer, psk, psk_hash, completed_rounds):
             writer.write(json.dumps({'status': 'failed', 'reason': 'invalid_request'}).encode())
             await writer.drain()
             return False
-        
-        # Send connection acknowledgement
+
         conn_response = {'status': 'connected', 'round': conn_request.get('round', 0)}
         writer.write(json.dumps(conn_response).encode())
         await writer.drain()
-        
-        # Step 2: Handle authentication request
+
         auth_data = await reader.read(16384)
         auth_request = json.loads(auth_data.decode())
         
@@ -57,10 +54,8 @@ async def handle_client(reader, writer, psk, psk_hash, completed_rounds):
             writer.write(json.dumps({'status': 'failed', 'reason': 'invalid_auth_request'}).encode())
             await writer.drain()
             return False
-        
-        # Verify PSK hash
+
         if auth_request.get('psk_hash') == psk_hash:
-            # Authentication successful - measure processing time before sending response
             auth_end_time = time.time_ns()
             metrics['authentication_times'].append(auth_end_time - auth_start_time)
             
