@@ -58,11 +58,3 @@ So to create one!
 
 ### All the functionalities in our project are modular, except for those within a particular functionality. Therefore, run only the necessary operations that are needed to avoid port conflicts or WIN errors.
 
-### Before any presentations or reviews
-
-1. **Backup and delete** the old source code.  
-2. **Clone** the latest source code from this repository.  
-3. **Reinstall dependencies** using the updated `requirements.txt`.  
-4. **Check VPN connection**, specifically to the **German server** from [VPNBook](https://www.vpnbook.com/).  
-5. **Update VPN credentials** before proceeding.  
-
