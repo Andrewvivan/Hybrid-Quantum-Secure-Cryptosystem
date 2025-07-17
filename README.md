@@ -15,7 +15,7 @@ Qiskit AER == 0.17.0
 ### Follow the steps below to run the Hybrid Quantum Secure Cryptosystem on your PC.
 * First, either clone this repository or download the complete source code. 
 ```
-git clone https://github.com/Andrewvivan/Hybrid-Quantum-Secure-Cryptosystem.git
+git clone https://github.com/andrew-vivan-x/hybrid_quantum_secure_cryptosystem.git
 ```
 * Open the project-level directory inside the "Hybrid-Quantum-Secure-Cryptosystem" folder in your console or any IDE.
 ```
